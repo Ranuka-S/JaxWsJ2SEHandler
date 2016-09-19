@@ -40,26 +40,34 @@ public class UserValidateHandler implements SOAPHandler<SOAPMessageContext> {
 		if (!isOutBoundIndicator) {
 			try {
 				SOAPHeader soapHeader = context.getMessage().getSOAPHeader();
+
 				if (soapHeader != null) {
 
 					Iterator<SOAPElement> securityElements = soapHeader.getChildElements(QNAME_WSSE_SECURITY);
+
 					while (securityElements.hasNext()) {
 						SOAPElement securityEliment = securityElements.next();
+
 						if ((securityEliment.getElementName().getLocalName()).equals("Security")) {
 
 							Iterator<?> it2 = securityEliment.getChildElements();
 							while (it2.hasNext()) {
+
 								Node soapNode = (Node) it2.next();
+
 								if (soapNode instanceof SOAPElement) {
+
 									SOAPElement element = (SOAPElement) soapNode;
 									QName elementQname = element.getElementQName();
+
 									if (QNAME_WSSE_USERNAMETOKEN.equals(elementQname)) {
 										SOAPElement usernameTokenElement = element;
 										wsseUsername = getFirstChildElementValue(usernameTokenElement,
 												QNAME_WSSE_USERNAME);
 										wssePassword = getFirstChildElementValue(usernameTokenElement,
 												QNAME_WSSE_PASSWORD);
-										System.out.println("username = " +wsseUsername + " password = " +wssePassword );
+										System.out
+												.println("username = " + wsseUsername + " password = " + wssePassword);
 
 										break;
 									}
@@ -68,8 +76,13 @@ public class UserValidateHandler implements SOAPHandler<SOAPMessageContext> {
 							}
 
 						}
-					}
 
+						context.put("USERNAME", wsseUsername);
+						context.setScope("USERNAME", Scope.APPLICATION);
+
+						context.put("PASSWORD", wssePassword);
+						context.setScope("PASSWORD", Scope.APPLICATION);
+					}
 				}
 			} catch (SOAPException e) {
 				// TODO Auto-generated catch block
@@ -84,7 +97,7 @@ public class UserValidateHandler implements SOAPHandler<SOAPMessageContext> {
 		String value = null;
 		Iterator<?> it = soapElement.getChildElements(qNameToFind);
 		while (it.hasNext()) {
-			SOAPElement element = (SOAPElement) it.next(); // use first
+			SOAPElement element = (SOAPElement) it.next();
 			value = element.getValue();
 		}
 		return value;
